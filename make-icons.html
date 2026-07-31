@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>make-icons · agorlab engine</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#0a0b0e;color:#ECECEC;font-family:'IBM Plex Mono',monospace;min-height:100vh;
+       background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Ccircle cx='1.2' cy='1.2' r='1' fill='%23ffffff' fill-opacity='0.045'/%3E%3C/svg%3E");
+       display:flex;flex-direction:column;align-items:center;padding:32px 16px}
+  h1{font-size:18px;letter-spacing:.04em;margin-bottom:4px}
+  h1 .cur{color:#FF5F00}
+  .tag{font-size:10px;color:#8a8f9c;margin-bottom:28px}
+  .grid{display:flex;gap:20px;flex-wrap:wrap;justify-content:center}
+  .card{background:#14161b;border:1px solid #2b2f39;border-radius:8px;padding:16px;text-align:center;width:210px}
+  .card img{width:150px;height:150px;border-radius:8px;border:1px solid #2b2f39;image-rendering:pixelated}
+  .card p{font-size:11px;color:#8a8f9c;margin:10px 0 12px}
+  .card button{width:100%;background:#FF5F00;color:#0a0b0e;border:1px solid #0a0b0e;border-radius:5px;
+               padding:10px;font:600 11px 'IBM Plex Mono';letter-spacing:.05em;cursor:pointer}
+  .card button:active{transform:translateY(1px)}
+  .note{margin-top:26px;font-size:11px;color:#8a8f9c;max-width:520px;text-align:center;line-height:1.6;
+        border-left:2px solid rgba(255,95,0,.5);padding-left:12px;text-align:left}
+  .note b{color:#ECECEC}
+</style>
+</head>
+<body>
+  <h1>make-icons<span class="cur">_</span></h1>
+  <div class="tag">[ agorlab engine · generador de iconos ]</div>
+  <div class="grid" id="grid"></div>
+  <p class="note">&gt; descargá los tres archivos y ponelos dentro de <b>icons/</b> con estos nombres exactos:
+     <b>icon-192.png</b>, <b>icon-512.png</b>, <b>icon-maskable-512.png</b>. El maskable lleva más aire alrededor
+     para que Android lo recorte en círculo sin cortar el triángulo_</p>
+
+<script>
+function drawIcon(size, maskable){
+  const c = document.createElement('canvas'); c.width = c.height = size;
+  const x = c.getContext('2d');
+  x.fillStyle = '#0a0b0e'; x.fillRect(0, 0, size, size);
+  const step = Math.max(8, Math.round(size/16)), pr = Math.max(1, size/256);
+  x.fillStyle = 'rgba(255,255,255,0.07)';
+  for(let gx=step/2; gx<size; gx+=step) for(let gy=step/2; gy<size; gy+=step){
+    x.beginPath(); x.arc(gx, gy, pr, 0, 7); x.fill();
+  }
+  const cx = size/2, cy = size/2, h = size*(maskable?0.40:0.52), side = 2*h/Math.sqrt(3);
+  x.fillStyle = '#FF5F00';
+  x.beginPath(); x.moveTo(cx, cy-2*h/3); x.lineTo(cx-side/2, cy+h/3); x.lineTo(cx+side/2, cy+h/3); x.closePath(); x.fill();
+  const ih = h*0.45, iside = 2*ih/Math.sqrt(3);
+  x.fillStyle = '#0a0b0e';
+  x.beginPath(); x.moveTo(cx, cy-2*ih/3); x.lineTo(cx-iside/2, cy+ih/3); x.lineTo(cx+iside/2, cy+ih/3); x.closePath(); x.fill();
+  return c;
+}
+function download(canvas, name){
+  canvas.toBlob(b => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(b); a.download = name; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+  }, 'image/png');
+}
+const specs = [
+  { size:192, mask:false, file:'icon-192.png',           label:'192 · purpose: any' },
+  { size:512, mask:false, file:'icon-512.png',           label:'512 · purpose: any' },
+  { size:512, mask:true,  file:'icon-maskable-512.png',  label:'512 · purpose: maskable' }
+];
+const grid = document.getElementById('grid');
+specs.forEach(s => {
+  const cv = drawIcon(s.size, s.mask);
+  const card = document.createElement('div'); card.className = 'card';
+  const img = document.createElement('img'); img.src = cv.toDataURL();
+  const p = document.createElement('p'); p.textContent = s.label;
+  const btn = document.createElement('button'); btn.textContent = '⬇ ' + s.file;
+  btn.onclick = () => download(cv, s.file);
+  card.append(img, p, btn); grid.appendChild(card);
+});
+</script>
+</body>
+</html>
